@@ -1,0 +1,247 @@
+# FILE: composition-sharedinfra-azure.yaml
+# STATUS: CORRECTED (v3) - Removed invalid 'dependsOn' fields.
+# PURPOSE: Implements the SharedGatewayInfrastructure by composing Azure managed resources.
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: sharedgatewayinfrastructure.azure.premium
+  labels:
+    provider: azure
+    tier: premium
+spec:
+  compositeTypeRef:
+    apiVersion: platform.yourcompany.com/v1alpha1
+    kind: SharedGatewayInfrastructure
+  patchSets:
+    - name: common-azure-details
+      patches:
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.parameters.location"
+          toFieldPath: "spec.forParameters.location"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.parameters.tags"
+          toFieldPath: "spec.forParameters.tags"
+
+  resources:
+    # 1. Azure Resource Group
+    - name: resourcegroup
+      base:
+        apiVersion: azure.upbound.io/v1beta1
+        kind: ResourceGroup
+        metadata:
+          labels:
+            infra-id: ""
+        spec:
+          forParameters:
+            providerConfigRef:
+              name: "default"
+      patches:
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "metadata.labels[infra-id]"
+        - type: PatchSet
+          patchSetName: common-azure-details
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.name"
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-rg"
+        - fromFieldPath: "status.atProvider.name"
+          toFieldPath: "status.atProvider.sharedResourceGroupName"
+
+    # 2. DMZ Virtual Network
+    - name: dmzvnet
+      base:
+        apiVersion: network.azure.upbound.io/v1beta1
+        kind: VirtualNetwork
+        metadata:
+          labels:
+            infra-id: ""
+        spec:
+          forParameters:
+            resourceGroupNameSelector:
+              matchLabels:
+                infra-id: ""
+            providerConfigRef:
+              name: "default"
+      patches:
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "metadata.labels[infra-id]"
+        - type: PatchSet
+          patchSetName: common-azure-details
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.resourceGroupNameSelector.matchLabels[infra-id]"
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.name"
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-dmz-vnet"
+        - type: FromCompositeFieldPath
+          fromFieldPath: "spec.parameters.dmzVnetAddressPrefix"
+          toFieldPath: "spec.forParameters.addressSpacePrefixes[0]"
+        - fromFieldPath: "status.atProvider.id"
+          toFieldPath: "status.atProvider.dmzVnetId"
+
+    # 3. APIM Subnet (within DMZ VNet)
+    - name: apimsubnet
+      base:
+        apiVersion: network.azure.upbound.io/v1beta1
+        kind: Subnet
+        spec:
+          forParameters:
+            addressPrefixes:
+              - "10.100.1.0/24"
+            delegations:
+              - name: "Microsoft.ApiManagement.service"
+                serviceDelegation:
+                  name: "Microsoft.ApiManagement/service"
+                  actions:
+                    - "Microsoft.Network/virtualNetworks/subnets/join/action"
+            providerConfigRef:
+              name: "default"
+      patches:
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.resourceGroupNameSelector.matchLabels[infra-id]"
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.virtualNetworkNameSelector.matchLabels[infra-id]"
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.name"
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-apim-snet"
+        - fromFieldPath: "status.atProvider.id"
+          toFieldPath: "status.atProvider.apimSubnetId"
+
+    # 4. API Management Service (Internal Mode)
+    - name: apimservice
+      base:
+        apiVersion: apimanagement.azure.upbound.io/v1beta1
+        kind: Service
+        spec:
+          forParameters:
+            virtualNetworkType: "Internal"
+            identity:
+              type: "SystemAssigned"
+            providerConfigRef:
+              name: "default"
+      patches:
+        - type: PatchSet
+          patchSetName: common-azure-details
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.resourceGroupNameSelector.matchLabels[infra-id]"
+        - fromFieldPath: "spec.parameters.apimInstanceName"
+          toFieldPath: "spec.forParameters.name"
+        - fromFieldPath: "spec.parameters.apimPublisherName"
+          toFieldPath: "spec.forParameters.publisherName"
+        - fromFieldPath: "spec.parameters.apimPublisherEmail"
+          toFieldPath: "spec.forParameters.publisherEmail"
+        - type: CombineFromComposite
+          toFieldPath: "spec.forParameters.skuName"
+          combine:
+            variables:
+              - fromFieldPath: "spec.parameters.apimSkuName"
+            strategy: string
+            string:
+              fmt: "%s_1"
+        - fromFieldPath: "status.atProvider.apimSubnetId"
+          toFieldPath: "spec.forParameters.virtualNetworkConfiguration[0].subnetResourceId"
+        - fromFieldPath: "status.atProvider.id"
+          toFieldPath: "status.atProvider.apimServiceId"
+        - fromFieldPath: "status.atProvider.name"
+          toFieldPath: "status.atProvider.apimServiceName"
+
+    # 5. Azure Front Door Premium Profile
+    - name: frontdoorprofile
+      base:
+        apiVersion: cdn.azure.upbound.io/v1beta1
+        kind: FrontdoorProfile
+        spec:
+          forParameters:
+            location: "Global"
+            skuName: "Premium_AzureFrontDoor"
+            providerConfigRef:
+              name: "default"
+      patches:
+        - type: PatchSet
+          patchSetName: common-azure-details
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.resourceGroupNameSelector.matchLabels[infra-id]"
+        - fromFieldPath: "spec.parameters.frontDoorProfileName"
+          toFieldPath: "spec.forParameters.name"
+        - fromFieldPath: "status.atProvider.id"
+          toFieldPath: "status.atProvider.frontDoorId"
+        - fromFieldPath: "status.atProvider.resourceGuid"
+          toFieldPath: "status.atProvider.frontDoorEndpointHostName"
+          transforms:
+            - type: string
+              string:
+                fmt: "%s.z01.azurefd.net"
+
+    # 6. WAF Policy for Front Door
+    - name: wafpolicy
+      base:
+        apiVersion: cdn.azure.upbound.io/v1beta1
+        kind: FrontdoorFirewallPolicy
+        spec:
+          forParameters:
+            mode: "Prevention"
+            skuName: "Premium_AzureFrontDoor"
+            managedRule:
+              - action: "Block"
+                enabled: true
+                type: "OWASP"
+                version: "3.2"
+            providerConfigRef:
+              name: "default"
+      patches:
+        - type: PatchSet
+          patchSetName: common-azure-details
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.resourceGroupNameSelector.matchLabels[infra-id]"
+        - fromFieldPath: "spec.parameters.wafPolicyName"
+          toFieldPath: "spec.forParameters.name"
+        - fromFieldPath: "status.atProvider.id"
+          toFieldPath: "status.atProvider.wafPolicyId"
+
+    # 7. Front Door Origin Group for APIM (with Private Link Origin)
+    - name: apimorigingroup
+      base:
+        apiVersion: cdn.azure.upbound.io/v1beta1
+        kind: FrontdoorOriginGroup
+        spec:
+          forParameters:
+            loadBalancing:
+              sampleSize: 4
+              successfulSamplesRequired: 2
+            healthProbe:
+              path: "/healthz"
+              protocol: "Https"
+              intervalInSeconds: 60
+            origin:
+              - name: "apim-private-origin"
+                enabled: true
+                privateLinkSubresourceName: "gateway"
+                privateLinkApprovalMessage: "Approved by Crossplane"
+                httpPort: 80
+                httpsPort: 443
+            providerConfigRef:
+              name: "default"
+      patches:
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.resourceGroupNameSelector.matchLabels[infra-id]"
+        - fromFieldPath: "status.atProvider.frontDoorId"
+          toFieldPath: "spec.forParameters.cdnFrontdoorProfileId"
+        - fromFieldPath: "spec.parameters.sharedInfraInstanceName"
+          toFieldPath: "spec.forParameters.name"
+          transforms:
+            - type: string
+              string:
+                fmt: "%s-apim-og"
+        - fromFieldPath: "status.atProvider.apimServiceName"
+          toFieldPath: "spec.forParameters.origin[0].hostName"
+        - fromFieldPath: "status.atProvider.apimServiceId"
+          toFieldPath: "spec.forParameters.origin[0].privateLinkResourceId"
+        - fromFieldPath: "spec.parameters.location"
+          toFieldPath: "spec.forParameters.origin[0].privateLinkLocation"

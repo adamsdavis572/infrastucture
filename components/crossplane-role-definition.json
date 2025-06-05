@@ -1,0 +1,29 @@
+{
+  "Name": "Crossplane Shared Gateway Manager",
+  "Description": "Grants permissions to manage the shared API gateway infrastructure via Crossplane.",
+  "IsCustom": true,
+  "AssignableScopes": [
+    "/subscriptions/b5ed4ae0-5420-40c9-8fb5-ecc4bf94156c"
+  ],
+  "Actions": [
+    "Microsoft.Resources/subscriptions/resourcegroups/read",
+    "Microsoft.Resources/subscriptions/resourcegroups/write",
+    "Microsoft.Resources/subscriptions/resourcegroups/delete",
+    "Microsoft.Network/virtualNetworks/*",
+    "Microsoft.ApiManagement/service/*",
+    "Microsoft.Cdn/profiles/*",
+    "Microsoft.Network/frontDoorWebApplicationFirewallPolicies/*",
+    "Microsoft.Network/privateEndpoints/write",
+    "Microsoft.Network/privateEndpoints/read",
+    "Microsoft.Dns/dnszones/CNAME/write",
+    "Microsoft.Dns/dnszones/A/write",
+    "Microsoft.Dns/dnszones/read",
+    "Microsoft.Authorization/roleAssignments/write",
+    "Microsoft.Authorization/roleAssignments/delete",
+    "Microsoft.Authorization/roleAssignments/read"
+  ],
+  "NotActions": [],
+  "DataActions": [],
+  "NotDataActions": []
+}
+

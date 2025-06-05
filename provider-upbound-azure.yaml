@@ -1,0 +1,8 @@
+# FILE: provider-upbound-azure.yaml
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-family-azure
+spec:
+  # It's best practice to pin to a specific version for predictable builds.
+  package: "xpkg.upbound.io/upbound/provider-family-azure:v1.13.0"

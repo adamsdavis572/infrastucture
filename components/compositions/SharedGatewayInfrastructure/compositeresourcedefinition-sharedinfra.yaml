@@ -1,0 +1,106 @@
+# FILE: compositeresourcedefinition-sharedinfra.yaml
+# STATUS: Complete
+# PURPOSE: Defines the API for your cluster-scoped Shared Gateway Infrastructure.
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: sharedgatewayinfrastructures.platform.yourcompany.com
+spec:
+  group: platform.yourcompany.com
+  names:
+    kind: SharedGatewayInfrastructure
+    plural: sharedgatewayinfrastructures
+  versions:
+    - name: v1alpha1
+      served: true
+      referenceable: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                parameters:
+                  type: object
+                  description: "Parameters for configuring the Shared Gateway Infrastructure."
+                  properties:
+                    # --- Core Identifiers ---
+                    sharedInfraInstanceName:
+                      type: string
+                      description: "A unique name for this instance of shared infrastructure, used for deriving other resource names (e.g., prod-gateway)."
+                    location:
+                      type: string
+                      description: "Azure region for deployment (e.g., UK South)."
+                    
+                    # --- Globally Unique Service Names ---
+                    apimInstanceName:
+                      type: string
+                      description: "Globally unique name for the Azure API Management instance."
+                    frontDoorProfileName:
+                      type: string
+                      description: "Globally unique name for the Azure Front Door Premium profile."
+
+                    # --- APIM Configuration ---
+                    apimSkuName:
+                      type: string
+                      description: "SKU for APIM. Premium or Developer required for VNet integration."
+                      enum: ["Premium", "Developer"]
+                    apimPublisherName:
+                      type: string
+                      description: "Publisher name for APIM."
+                    apimPublisherEmail:
+                      type: string
+                      description: "Publisher email for APIM."
+
+                    # --- Networking Configuration ---
+                    dmzVnetAddressPrefix:
+                      type: string
+                      description: "The single address prefix for the entire DMZ VNet (e.g., 10.100.0.0/16)."
+                    publicDnsZoneName:
+                      type: string
+                      description: "Name of the existing public Azure DNS Zone where records will be created."
+                    
+                    # --- Optional Configuration ---
+                    wafPolicyName:
+                      type: string
+                      description: "(Optional) A specific name for the Azure WAF Policy. If not provided, a name will be derived."
+                    tags:
+                      type: object
+                      description: "(Optional) Tags to apply to provisioned resources."
+                      additionalProperties:
+                        type: string
+                  required:
+                    - sharedInfraInstanceName
+                    - location
+                    - apimInstanceName
+                    - frontDoorProfileName
+                    - apimSkuName
+                    - apimPublisherName
+                    - apimPublisherEmail
+                    - dmzVnetAddressPrefix
+                    - publicDnsZoneName
+              required:
+                - parameters
+            status:
+              type: object
+              properties:
+                atProvider:
+                  type: object
+                  properties:
+                    sharedResourceGroupName:
+                      type: string
+                    apimServiceId:
+                      type: string
+                    apimServiceName:
+                      type: string
+                    dmzVnetId:
+                      type: string
+                    apimSubnetId:
+                      type: string
+                    frontDoorId:
+                      type: string
+                    frontDoorEndpointHostName:
+                      type: string
+                    wafPolicyId:
+                      type: string
