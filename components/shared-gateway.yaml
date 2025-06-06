@@ -1,0 +1,30 @@
+# FILE: my-shared-gateway.yaml
+# PURPOSE: Creates an instance of our shared gateway platform.
+apiVersion: platform.yourcompany.com/v1alpha1
+kind: SharedGatewayInfrastructure
+metadata:
+  name: prod-gateway # This is the name of the Crossplane resource itself
+spec:
+  parameters:
+    # --- Core Identifiers ---
+    sharedInfraInstanceName: "prod-gateway" # Used to derive names of sub-resources
+    location: "UK South"
+
+    # --- Globally Unique Service Names ---
+    apimInstanceName: "myorg-prod-apim-001"       # MUST be globally unique
+    frontDoorProfileName: "myorg-prod-fd-001"  # MUST be globally unique
+
+    # --- APIM Configuration ---
+    apimSkuName: "Premium" # Can be "Premium" or "Developer"
+    apimPublisherName: "My Platform Engineering Team"
+    apimPublisherEmail: "platform@myorg.com"
+
+    # --- Networking Configuration ---
+    dmzVnetAddressPrefix: "10.200.0.0/16"
+    publicDnsZoneName: "myplatform.cloud" # MUST exist in Azure
+
+    # --- Optional Configuration ---
+    wafPolicyName: "prod-gateway-waf" # Optional, a name will be derived if omitted
+    tags:
+      environment: "production"
+      platform-managed: "true"
