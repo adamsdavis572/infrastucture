@@ -1,4 +1,4 @@
-# FILE: providerconfig-azure-clean.yaml
+# FILE: providerconfig-azure.yaml
 apiVersion: azure.upbound.io/v1beta1
 kind: ProviderConfig
 metadata:

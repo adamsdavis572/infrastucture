@@ -1,0 +1,19 @@
+# This file installs the provider and configures it in one step.
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-family-azure
+spec:
+  package: "xpkg.upbound.io/upbound/provider-family-azure:v1.13.0"
+---
+apiVersion: azure.upbound.io/v1beta1
+kind: ProviderConfig
+metadata:
+  name: default
+spec:
+  credentials:
+    source: Secret
+    secretRef:
+      namespace: crossplane-system
+      name: azure-secret # Using the correct secret name
+      key: creds
