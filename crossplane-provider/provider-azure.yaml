@@ -1,7 +1,0 @@
-# FILE: provider-azure.yaml
-apiVersion: pkg.crossplane.io/v1
-kind: Provider
-metadata:
-  name: provider-family-azure
-spec:
-  package: "xpkg.upbound.io/upbound/provider-family-azure:v1.13.0"

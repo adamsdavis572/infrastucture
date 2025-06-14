@@ -3,4 +3,4 @@ kind: Provider
 metadata:
   name: provider-azure-cdn
 spec:
-  package: xpkg.upbound.io/upbound/provider-azure-cdn:v1.13.0
+  package: xpkg.crossplane.io/crossplane-contrib/provider-azure-cdn:v1.13.0

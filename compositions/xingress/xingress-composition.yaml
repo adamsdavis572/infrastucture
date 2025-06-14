@@ -1,0 +1,107 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: xingress-composite
+spec:
+  mode: Pipeline
+  pipeline:
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+        - name: api-gateway
+          base:
+            apiVersion: apimanagement.azure.upbound.io/v1beta1
+            kind: Gateway
+            spec:
+              forProvider:
+                apiManagementIdSelector:
+                  matchControllerRef: true
+                description: Example API Management gateway
+                locationData:
+                - city: example city
+                  district: example district
+                  name: example name
+                  region: example region
+        - name: api-management
+          base:
+            apiVersion: apimanagement.azure.upbound.io/v1beta1
+            kind: Management
+            spec:
+              forProvider:
+                location: West Europe
+                publisherEmail: company@terraform.io
+                publisherName: My Company
+                resourceGroupNameSelector:
+                  matchControllerRef: true
+                skuName: Developer_1
+          patches:
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.location"
+              toFieldPath: "spec.forProvider.location"
+              transforms:
+                - type: map
+                  map:
+                    EU: "Sweden Central"
+                    US: "Central US"
+        - name: subnet-apim
+          base:
+            apiVersion: network.azure.upbound.io/v1beta1
+            kind: Subnet
+            spec:
+              forProvider:
+                addressPrefixes:
+                  - 10.0.1.0/24
+                virtualNetworkNameSelector:
+                  matchControllerRef: true
+                resourceGroupNameSelector:
+                  matchControllerRef: true
+        - name: vnet-dmz
+          base:
+            apiVersion: network.azure.upbound.io/v1beta1
+            kind: VirtualNetwork
+            spec:
+              forProvider:
+                addressSpace:
+                  - 10.0.0.0/16
+                location: "Central US"
+                resourceGroupNameSelector:
+                  matchControllerRef: true
+          patches:
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.location"
+              toFieldPath: "spec.forProvider.location"
+              transforms:
+                - type: map
+                  map:
+                    EU: "Sweden Central"
+                    US: "Central US"
+        - name: resource-group-dmz
+          base:
+            apiVersion: azure.upbound.io/v1beta1
+            kind: ResourceGroup
+            spec:
+              forProvider:
+                location: Central US
+          patches:
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.location"
+              toFieldPath: "spec.forProvider.location"
+              transforms:
+                - type: map
+                  map:
+                    EU: "Sweden Central"
+                    US: "Central US"
+                  patches:
+            
+           # - type: FromCompositeFieldPath
+           #   fromFieldPath: spec.parameters.instanceName???
+           #   toFieldPath: metadata.annotations[crossplane.io/external-name]
+
+
+  compositeTypeRef:
+    apiVersion: azure.platform.my-org.co/v1alpha1
+    kind: XIngress
