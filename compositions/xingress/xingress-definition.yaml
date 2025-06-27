@@ -16,12 +16,67 @@ spec:
           spec:
             type: object
             properties:
+              name:
+                type: string
+                description: "Name to identify this XIngress instance. Will be used for tags and labels."
               location:
                 type: string
                 oneOf:
-                  - pattern: '^EU$'
-                  - pattern: '^US$'
+                  - pattern: '^UK$'
+                  - pattern: '^USEast$'
+              apiManagement:
+                type: object
+                description: "API Management configuration"
+                properties:
+                  publisherEmail:
+                    type: string
+                    description: "Email address of the API Management publisher"
+                    default: "company@terraform.io"
+                  publisherName:
+                    type: string
+                    description: "Name of the API Management publisher"
+                    default: "My Company"
+                  skuName:
+                    type: string
+                    description: "SKU of the API Management instance"
+                    default: "Developer_1"
+                    enum:
+                      - "Consumption"
+                      - "Developer_1"
+                      - "Basic_1"
+                      - "Standard_1"
+                      - "Premium_1"
+              networking:
+                type: object
+                description: "Network configuration"
+                properties:
+                  vnetAddressSpace:
+                    type: array
+                    description: "Address space for the virtual network"
+                    items:
+                      type: string
+                    default: ["10.0.0.0/16"]
+                  subnetPrefix:
+                    type: array
+                    description: "Address prefix for the subnet"
+                    items:
+                      type: string
+                    default: ["10.0.1.0/24"]
+              resourceNames:
+                type: object
+                description: "Optional: Override auto-generated resource names"
+                properties:
+                  resourceGroup:
+                    type: string
+                    description: "Name for the resource group (default: rg-{name})"
+                  vnet:
+                    type: string
+                    description: "Name for the virtual network (default: vnet-{name})"
+                  subnet:
+                    type: string
+                    description: "Name for the subnet (default: subnet-apim-{name})"
             required:
               - location
+              - name
     served: true
     referenceable: true

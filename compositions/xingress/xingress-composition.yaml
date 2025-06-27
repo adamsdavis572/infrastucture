@@ -11,6 +11,12 @@ spec:
     input:
       apiVersion: pt.fn.crossplane.io/v1beta1
       kind: Resources
+      patchSets:
+        - name: common-labels
+          patches:
+            - type: FromCompositeFieldPath
+              fromFieldPath: spec.name
+              toFieldPath: metadata.labels.xingress
       resources:
         - name: api-gateway
           base:
@@ -26,6 +32,9 @@ spec:
                   district: example district
                   name: example name
                   region: example region
+          patches:
+            - type: PatchSet
+              patchSetName: common-labels
         - name: api-management
           base:
             apiVersion: apimanagement.azure.upbound.io/v1beta1
@@ -45,8 +54,19 @@ spec:
               transforms:
                 - type: map
                   map:
-                    EU: "Sweden Central"
-                    US: "Central US"
+                    UK: "UK South"
+                    USEast: "East US"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.apiManagement.publisherEmail"
+              toFieldPath: "spec.forProvider.publisherEmail"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.apiManagement.publisherName"
+              toFieldPath: "spec.forProvider.publisherName"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.apiManagement.skuName"
+              toFieldPath: "spec.forProvider.skuName"
+            - type: PatchSet
+              patchSetName: common-labels
         - name: subnet-apim
           base:
             apiVersion: network.azure.upbound.io/v1beta1
@@ -59,6 +79,20 @@ spec:
                   matchControllerRef: true
                 resourceGroupNameSelector:
                   matchControllerRef: true
+          patches:
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.networking.subnetPrefix"
+              toFieldPath: "spec.forProvider.addressPrefixes"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.resourceNames.subnet"
+              toFieldPath: "metadata.annotations[crossplane.io/external-name]"
+              transforms:
+                - type: string
+                  string:
+                    type: Format
+                    fmt: "subnet-apim-%s"
+            - type: PatchSet
+              patchSetName: common-labels
         - name: vnet-dmz
           base:
             apiVersion: network.azure.upbound.io/v1beta1
@@ -77,8 +111,21 @@ spec:
               transforms:
                 - type: map
                   map:
-                    EU: "Sweden Central"
-                    US: "Central US"
+                    UK: "UK South"
+                    USEast: "East US"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.networking.vnetAddressSpace"
+              toFieldPath: "spec.forProvider.addressSpace"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.resourceNames.vnet"
+              toFieldPath: "metadata.annotations[crossplane.io/external-name]"
+              transforms:
+                - type: string
+                  string:
+                    type: Format
+                    fmt: "vnet-%s"
+            - type: PatchSet
+              patchSetName: common-labels
         - name: resource-group-dmz
           base:
             apiVersion: azure.upbound.io/v1beta1
@@ -93,15 +140,18 @@ spec:
               transforms:
                 - type: map
                   map:
-                    EU: "Sweden Central"
-                    US: "Central US"
-                  patches:
-            
-           # - type: FromCompositeFieldPath
-           #   fromFieldPath: spec.parameters.instanceName???
-           #   toFieldPath: metadata.annotations[crossplane.io/external-name]
-
-
+                    UK: "UK South"
+                    USEast: "East US"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.name"
+              toFieldPath: "metadata.annotations[crossplane.io/external-name]"
+              transforms:
+                - type: string
+                  string:
+                    type: Format
+                    fmt: "rg-%s"
+            - type: PatchSet
+              patchSetName: common-labels
   compositeTypeRef:
     apiVersion: azure.platform.my-org.co/v1alpha1
     kind: XIngress

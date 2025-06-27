@@ -1,0 +1,45 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: CompositeResourceDefinition
+metadata:
+  name: apiinstances.platform.my-org.co
+spec:
+  group: platform.my-org.co
+  names:
+    kind: ApiInstance
+    plural: apiinstances
+  claimNames:
+    kind: ApiClaim
+    plural: apiclaims
+  versions:
+  - name: v1alpha1
+    served: true
+    referenceable: true
+    schema:
+      openAPIV3Schema:
+        type: object
+        properties:
+          spec:
+            type: object
+            properties:
+              ingressRef:
+                type: string
+                description: "Name of the XIngress resource that manages the API Gateway"
+              apiName:
+                type: string
+                description: "Name of the API to be created"
+              apiPath:
+                type: string
+                description: "Base path for the API"
+              apiProtocols:
+                type: array
+                items:
+                  type: string
+                  enum: ["http", "https"]
+                default: ["https"]
+              swaggerDefinition:
+                type: string
+                description: "Link OpenAPI/Swagger definition in JSON or YAML format"
+            required:
+              - ingressRef
+              - apiName
+              - apiPath

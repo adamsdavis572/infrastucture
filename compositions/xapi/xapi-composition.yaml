@@ -1,0 +1,102 @@
+apiVersion: apiextensions.crossplane.io/v1
+kind: Composition
+metadata:
+  name: apiinstances.platform.my-org.co
+  labels:
+    provider: azure
+spec:
+  compositeTypeRef:
+    apiVersion: platform.my-org.co/v1alpha1
+    kind: ApiInstance
+  mode: Pipeline
+  pipeline:
+  - step: patch-and-transform
+    functionRef:
+      name: function-patch-and-transform
+    input:
+      apiVersion: pt.fn.crossplane.io/v1beta1
+      kind: Resources
+      resources:
+        - name: api
+          base:
+            apiVersion: apimanagement.azure.upbound.io/v1beta1
+            kind: API
+            metadata:
+              annotations:
+                crossplane.io/external-name: ${apiName}
+            spec:
+              forProvider:
+                apiManagementNameSelector:
+                  matchLabels:
+                    xingress: ${ingressRef}
+                displayName: "${apiName}"
+                path: "${apiPath}"
+                protocols:
+                  - "https"
+                revision: "1"
+                import:
+                  - contentFormat: openapi
+                    contentValue: |
+                      openapi: 3.0.0
+                      info:
+                        title: Minimal API
+                        version: 1.0.0
+                      paths:
+                        /ping:
+                          get:
+                            summary: A simple health check endpoint
+                            responses:
+                              '200':
+                                description: 'Successful response'
+                                content:
+                                  application/json:
+                                    schema:
+                                      type: object
+                                      properties:
+                                        status:
+                                          type: string
+                                          example: 'ok'
+                #import:
+                #  - contentFormat: openapi
+                #    contentValue: ""
+                resourceGroupNameSelector:
+                  matchLabels:
+                    xingress: ${ingressRef}
+          patches:
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.ingressRef"
+              toFieldPath: "spec.forProvider.apiManagementNameSelector.matchLabels.xingress"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.ingressRef"
+              toFieldPath: "spec.forProvider.resourceGroupNameSelector.matchLabels.xingress"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.apiName"
+              toFieldPath: "spec.forProvider.displayName"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.apiName"
+              toFieldPath: "metadata.annotations[crossplane.io/external-name]"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.apiPath"
+              toFieldPath: "spec.forProvider.path"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.apiProtocols"
+              toFieldPath: "spec.forProvider.protocols"
+            #- type: FromCompositeFieldPath
+            #  fromFieldPath: "spec.swaggerDefinition"
+            #  toFieldPath: "spec.forProvider.import[0].contentValue"
+        
+        - name: gateway-api
+          base:
+            apiVersion: apimanagement.azure.upbound.io/v1beta1
+            kind: GatewayAPI
+            spec:
+              forProvider:
+                apiIdSelector:
+                  matchControllerRef: true
+                gatewayIdSelector:
+                  matchLabels:
+                    xingress: ${ingressRef}
+          patches:
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.ingressRef"
+              toFieldPath: "spec.forProvider.gatewayIdSelector.matchLabels.xingress"
