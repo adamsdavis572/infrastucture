@@ -38,8 +38,12 @@ spec:
                 default: ["https"]
               swaggerDefinition:
                 type: string
-                description: "Link OpenAPI/Swagger definition in JSON or YAML format"
+                description: "Link or inline OpenAPI/Swagger definition in JSON or YAML format"
+              swaggerFormat:
+                type: string
+                description: "openapi or swagger, defaults to openapi"
             required:
               - ingressRef
               - apiName
               - apiPath
+              - swaggerDefinition

@@ -8,4 +8,24 @@ spec:
   apiPath: "example"
   apiProtocols: 
     - "https"
-  swaggerDefinition: https://raw.githubusercontent.com/swagger-api/swagger-petstore/refs/heads/master/src/main/resources/openapi.yaml
+  swaggerFormat: "openapi" # Optional, defaults to openapi
+  swaggerDefinition: |
+    openapi: 3.0.0
+    info:
+      title: Example API
+      version: 1.0.0
+    paths:
+      /example:
+        get:
+          summary: Example endpoint
+          responses:
+            '200':
+              description: Successful response
+              content:
+                application/json:
+                  schema:
+                    type: object
+                    properties:
+                      message:
+                        type: string
+                        example: "This is an example response"

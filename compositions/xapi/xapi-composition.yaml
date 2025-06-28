@@ -23,46 +23,27 @@ spec:
             kind: API
             metadata:
               annotations:
-                crossplane.io/external-name: ${apiName}
+                crossplane.io/external-name: ""
             spec:
               forProvider:
                 apiManagementNameSelector:
                   matchLabels:
-                    xingress: ${ingressRef}
-                displayName: "${apiName}"
-                path: "${apiPath}"
+                    xingress: ""
+                displayName: ""
+                path: ""
                 protocols:
                   - "https"
                 revision: "1"
                 import:
                   - contentFormat: openapi
-                    contentValue: |
-                      openapi: 3.0.0
-                      info:
-                        title: Minimal API
-                        version: 1.0.0
-                      paths:
-                        /ping:
-                          get:
-                            summary: A simple health check endpoint
-                            responses:
-                              '200':
-                                description: 'Successful response'
-                                content:
-                                  application/json:
-                                    schema:
-                                      type: object
-                                      properties:
-                                        status:
-                                          type: string
-                                          example: 'ok'
-                #import:
-                #  - contentFormat: openapi
-                #    contentValue: ""
+                    contentValue: ""
                 resourceGroupNameSelector:
                   matchLabels:
-                    xingress: ${ingressRef}
+                    xingress: ""
           patches:
+            - type: FromCompositeFieldPath
+              fromFieldPath: spec.apiName
+              toFieldPath: metadata.labels.xapi
             - type: FromCompositeFieldPath
               fromFieldPath: "spec.ingressRef"
               toFieldPath: "spec.forProvider.apiManagementNameSelector.matchLabels.xingress"
@@ -81,9 +62,12 @@ spec:
             - type: FromCompositeFieldPath
               fromFieldPath: "spec.apiProtocols"
               toFieldPath: "spec.forProvider.protocols"
-            #- type: FromCompositeFieldPath
-            #  fromFieldPath: "spec.swaggerDefinition"
-            #  toFieldPath: "spec.forProvider.import[0].contentValue"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.swaggerDefinition"
+              toFieldPath: "spec.forProvider.import[0].contentValue"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.swaggerFormat"
+              toFieldPath: "spec.forProvider.import[0].contentFormat"
         
         - name: gateway-api
           base:
@@ -95,7 +79,7 @@ spec:
                   matchControllerRef: true
                 gatewayIdSelector:
                   matchLabels:
-                    xingress: ${ingressRef}
+                    xingress: ""
           patches:
             - type: FromCompositeFieldPath
               fromFieldPath: "spec.ingressRef"
