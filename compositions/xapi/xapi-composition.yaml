@@ -31,6 +31,8 @@ spec:
                     xingress: ""
                 displayName: ""
                 path: ""
+                serviceUrl: ""
+                subscriptionRequired: false
                 protocols:
                   - "https"
                 revision: "1"
@@ -68,6 +70,12 @@ spec:
             - type: FromCompositeFieldPath
               fromFieldPath: "spec.swaggerFormat"
               toFieldPath: "spec.forProvider.import[0].contentFormat"
+            - type: FromCompositeFieldPath
+              fromFieldPath: "spec.backendUrl"
+              toFieldPath: "spec.forProvider.serviceUrl"
+
+            
+            
         
         - name: gateway-api
           base:
@@ -84,3 +92,94 @@ spec:
             - type: FromCompositeFieldPath
               fromFieldPath: "spec.ingressRef"
               toFieldPath: "spec.forProvider.gatewayIdSelector.matchLabels.xingress"
+
+        # - name: policy
+        #   base:
+        #     apiVersion: apimanagement.azure.upbound.io/v1beta1
+        #     kind: APIPolicy
+        #     metadata:
+        #       annotations:
+        #         crossplane.io/external-name: ""
+        #     spec:
+        #       forProvider:
+        #         apiManagementNameSelector:
+        #           matchLabels:
+        #             xingress: ""
+        #         resourceGroupNameSelector:
+        #           matchLabels:
+        #             xingress: ""
+        #         apiNameSelector:
+        #           matchControllerRef: true
+        #         xmlContent: ""
+        #   patches:
+        #     - type: FromCompositeFieldPath
+        #       fromFieldPath: "spec.ingressRef"
+        #       toFieldPath: "spec.forProvider.resourceGroupNameSelector.matchLabels.xingress"
+        #     - type: FromCompositeFieldPath
+        #       fromFieldPath: "spec.ingressRef"
+        #       toFieldPath: "spec.forProvider.apiManagementNameSelector.matchLabels.xingress"
+        #     - type: FromCompositeFieldPath
+        #       fromFieldPath: "spec.apiName"
+        #       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
+        #     - type: FromCompositeFieldPath
+        #       fromFieldPath: "spec.apiName"
+        #       toFieldPath: spec.forProvider.xmlContent
+        #       transforms:
+        #         - type: string
+        #           string:
+        #             type: Format
+        #             fmt: |
+        #               <policies>
+        #                   <inbound>
+        #                       <base />
+        #                       <set-backend-service backend-id="%s_backend" />
+        #                   </inbound>
+        #                   <backend>
+        #                       <base />
+        #                   </backend>
+        #                   <outbound>
+        #                       <base />
+        #                   </outbound>
+        #                   <on-error>
+        #                       <base />
+        #                   </on-error>
+        #               </policies>
+        # - name: backend
+        #   base:
+        #     apiVersion: apimanagement.azure.upbound.io/v1beta1
+        #     kind: Backend
+        #     metadata:
+        #       annotations:
+        #         crossplane.io/external-name: ""
+        #       #name: ""
+        #     spec:
+        #       forProvider:
+        #         apiManagementNameSelector:
+        #           matchLabels:
+        #             xingress: ""
+        #         resourceGroupNameSelector:
+        #           matchLabels:
+        #             xingress: ""
+        #         protocol: https
+        #         url: ""
+        #   patches:
+        #     - type: FromCompositeFieldPath
+        #       fromFieldPath: "spec.ingressRef"
+        #       toFieldPath: "spec.forProvider.resourceGroupNameSelector.matchLabels.xingress"
+        #     - type: FromCompositeFieldPath
+        #       fromFieldPath: "spec.ingressRef"
+        #       toFieldPath: "spec.forProvider.apiManagementNameSelector.matchLabels.xingress"
+        #     - type: FromCompositeFieldPath
+        #       fromFieldPath: "spec.apiName"
+        #       toFieldPath: "metadata.annotations[crossplane.io/external-name]"
+        #     - type: FromCompositeFieldPath
+        #       fromFieldPath: "spec.backendUrl"
+        #       toFieldPath: "spec.forProvider.url"
+           # - type: FromCompositeFieldPath
+           #   fromFieldPath: "spec.apiName"
+           #   toFieldPath: metadata.name
+           #   transforms:
+           #     - type: string
+           #       string:
+           #         type: Format
+           #         fmt: "%s_backend"

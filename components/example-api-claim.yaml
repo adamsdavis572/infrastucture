@@ -29,3 +29,4 @@ spec:
                       message:
                         type: string
                         example: "This is an example response"
+  backendUrl: "https://example-api-function.azurewebsites.net/api"

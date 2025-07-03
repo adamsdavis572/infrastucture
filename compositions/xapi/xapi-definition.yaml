@@ -42,8 +42,12 @@ spec:
               swaggerFormat:
                 type: string
                 description: "openapi or swagger, defaults to openapi"
+              backendUrl:
+                type: string
+                description: "backend URL for the API, if applicable"
             required:
               - ingressRef
               - apiName
               - apiPath
               - swaggerDefinition
+              - backendUrl
