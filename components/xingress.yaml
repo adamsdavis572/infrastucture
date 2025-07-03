@@ -1,7 +1,0 @@
-apiVersion: azure.platform.my-org.co/v1alpha1
-kind: XIngress
-metadata:
-  name: my-ingress
-  namespace: crossplane-test
-spec:
-  location: "EU"
