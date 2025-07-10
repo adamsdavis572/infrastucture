@@ -51,7 +51,7 @@ kubectl create secret generic azure-secret \
 kubectl apply -f compositions/
 
 # 4. Create your first gateway
-kubectl apply -f components/example-xingress.yaml
+kubectl apply -f examples/example-xingress.yaml
 ```
 
 ### Basic Usage
@@ -113,9 +113,9 @@ spec:
 
 ### Examples
 
-- **[Example XIngress](components/example-xingress.yaml)** - Complete gateway example
-- **[Example ApiClaim](components/example-api-claim.yaml)** - Complete API example
-- **[ApiClaim Usage Guide](components/api-claim-README.md)** - Detailed ApiClaim documentation
+- **[Example XIngress](examples/example-xingress.yaml)** - Complete gateway example
+- **[Example ApiClaim](examples/example-api-claim.yaml)** - Complete API example
+- **[ApiClaim Usage Guide](examples/api-claim-README.md)** - Detailed ApiClaim documentation
 
 ## Project Structure
 
@@ -140,7 +140,7 @@ spec:
 │   └── xapi/                         # API composition
 │       ├── xapi-definition.yaml      # ApiInstance XRD
 │       └── xapi-composition.yaml     # ApiInstance Composition
-└── components/                        # Example resources
+└── examples/                        # Example resources
     ├── example-xingress.yaml         # Example XIngress
     ├── example-api-claim.yaml        # Example ApiClaim
     └── api-claim-README.md           # ApiClaim usage guide

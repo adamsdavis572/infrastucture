@@ -120,13 +120,13 @@ Deploy the example resources to test the installation:
 
 ```bash
 # Create an example XIngress
-kubectl apply -f components/example-xingress.yaml
+kubectl apply -f examples/example-xingress.yaml
 
 # Check status
 kubectl get xingress -o wide
 
 # Create an example API
-kubectl apply -f components/example-api-claim.yaml
+kubectl apply -f examples/example-api-claim.yaml
 
 # Check status
 kubectl get apiclaim -o wide
@@ -212,7 +212,7 @@ kubectl get xrd,composition -o yaml > crossplane-backup.yaml
 
 1. Review the [Configuration Reference](CONFIGURATION.md)
 2. Check the [API Reference](API_REFERENCE.md)
-3. Explore the example resources in the `components/` directory
+3. Explore the example resources in the `examples/` directory
 4. Set up monitoring and alerting
 5. Configure backup procedures
 
@@ -222,7 +222,7 @@ To remove the platform:
 
 ```bash
 # Remove example resources
-kubectl delete -f components/
+kubectl delete -f examples/
 
 # Remove compositions and XRDs
 kubectl delete -f compositions/
