@@ -2,9 +2,89 @@
 
 A Crossplane-based infrastructure platform for managing Azure API Management gateways and APIs through composable resources.
 
+## What is Crossplane?
+
+[Crossplane](https://crossplane.io/) is a Cloud Native Computing Foundation (CNCF) project that transforms your Kubernetes cluster into a universal control plane. It enables platform teams to assemble infrastructure from multiple vendors, and expose higher level self-service APIs for application teams to consume.
+
+**Learn More:**
+- 📖 [Crossplane Documentation](https://docs.crossplane.io/)
+- 🚀 [Getting Started Guide](https://docs.crossplane.io/latest/getting-started/)
+- 🎯 [Crossplane Concepts](https://docs.crossplane.io/latest/concepts/)
+- 💡 [Composition Guide](https://docs.crossplane.io/latest/concepts/compositions/)
+
+## Architecture Diagram
+
+```mermaid
+graph TB
+    subgraph "Kubernetes Cluster"
+        subgraph "Application Teams"
+            AC[ApiClaim] --> XI[XIngress]
+            AC2[ApiClaim] --> XI
+            AC3[ApiClaim] --> XI
+        end
+        
+        subgraph "Platform Team"
+            XI --> XRD[XRD: XIngress]
+            AC --> XRD2[XRD: ApiInstance]
+            XRD --> COMP[Composition]
+            XRD2 --> COMP2[Composition]
+        end
+        
+        subgraph "Crossplane Providers"
+            COMP --> APIM[Azure API Management Provider]
+            COMP --> NET[Azure Network Provider]
+            COMP2 --> APIM
+            COMP2 --> AUTH[Azure Authorization Provider]
+        end
+    end
+    
+    subgraph "Azure Cloud"
+        subgraph "Resource Group"
+            APIM --> APIMS[API Management Service]
+            NET --> VNET[Virtual Network]
+            NET --> SUBNET[Subnet]
+            APIMS --> GW[Gateway]
+            APIMS --> API1[API 1]
+            APIMS --> API2[API 2]
+            APIMS --> API3[API 3]
+            GW --> API1
+            GW --> API2
+            GW --> API3
+        end
+    end
+    
+    subgraph "Backend Services"
+        API1 --> BE1[Backend Service 1]
+        API2 --> BE2[Backend Service 2]
+        API3 --> BE3[Backend Service 3]
+    end
+    
+    style XI fill:#e1f5fe
+    style AC fill:#f3e5f5
+    style APIMS fill:#fff3e0
+    style GW fill:#e8f5e8
+```
+
 ## Overview
 
 This project provides a set of Crossplane Composite Resource Definitions (XRDs) and Compositions that enable platform teams to provision and manage Azure API Management infrastructure declaratively. The platform abstracts complex Azure resources into simple, reusable components.
+
+### Why Crossplane?
+
+✅ **Declarative Infrastructure**: Define infrastructure using Kubernetes-native YAML  
+✅ **GitOps Ready**: Version control your infrastructure alongside your applications  
+✅ **Self-Service**: Enable development teams to provision infrastructure safely  
+✅ **Consistent APIs**: Standardize infrastructure provisioning across teams  
+✅ **Policy & Governance**: Implement organizational policies and compliance  
+✅ **Multi-Cloud**: Extend to other cloud providers using the same patterns  
+
+### Platform Benefits
+
+- **Reduced Complexity**: Abstract away Azure-specific details from development teams
+- **Faster Onboarding**: Teams can provision API gateways in minutes, not hours
+- **Cost Optimization**: Share expensive resources like API Management services
+- **Operational Excellence**: Standardized configurations reduce operational overhead
+- **Security by Default**: Embed security best practices into platform abstractions
 
 ## Architecture
 
