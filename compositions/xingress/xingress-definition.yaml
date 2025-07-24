@@ -7,6 +7,9 @@ spec:
   names:
     kind: XIngress
     plural: xingresses
+  claimNames:
+    kind: XIngressClaim
+    plural: xingressclaims
   versions:
   - name: v1alpha1
     schema:

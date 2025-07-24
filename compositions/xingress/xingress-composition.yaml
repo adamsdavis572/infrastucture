@@ -4,6 +4,9 @@ metadata:
   name: xingress-composite
 spec:
   mode: Pipeline
+  compositeTypeRef:
+    apiVersion: azure.platform.my-org.co/v1alpha1
+    kind: XIngress
   pipeline:
   - step: patch-and-transform
     functionRef:
@@ -152,6 +155,3 @@ spec:
                     fmt: "rg-%s"
             - type: PatchSet
               patchSetName: common-labels
-  compositeTypeRef:
-    apiVersion: azure.platform.my-org.co/v1alpha1
-    kind: XIngress

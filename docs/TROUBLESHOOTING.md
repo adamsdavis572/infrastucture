@@ -387,57 +387,65 @@ kubectl delete apiclaim unused-api
 ### General Health Check
 
 ```bash
-# Check all Crossplane resources
 kubectl get crossplane
-
-# Check providers
 kubectl get providers
-
-# Check XRDs
 kubectl get xrd
-
-# Check compositions
 kubectl get compositions
-
-# Check XIngress resources
 kubectl get xingress
-
-# Check ApiClaim resources
 kubectl get apiclaim
-
-# Check managed resources
 kubectl get managed
 ```
+
+### When to Use `kubectl -n crossplane-system logs `
+
+Use this command to **view real-time or historical logs from Crossplane core or provider pods** in the `crossplane-system` namespace when you suspect there may be deeper issues not visible from resource status, events, or descriptions. Common cases include:
+
+- **Pods are not in a `Running` or `Ready` state** (e.g., `CrashLoopBackOff`, `Error`, `ImagePullBackOff`). Logs often reveal container crashes or startup failures.
+- **No relevant errors appear from resource status or events**, yet resource provisioning or reconciliation silently fails.
+- **Debugging provider-specific issues** such as authentication failures, cloud API errors, or connectivity problems. Provider pods typically log detailed error information.
+- **Confirming configuration changes** in providers or credentials have been correctly applied and reloaded by inspecting pod logs after adjustments.
+- **Viewing verbose or debug logging output** (enabled via annotations or configuration) for deeper troubleshooting of reconciliation loops and operations.
+
+Common usage:
+
+```bash
+# View logs from the first container in the pod
+kubectl -n crossplane-system logs 
+
+# View logs from a specific container within the pod
+kubectl -n crossplane-system logs  -c 
+
+# Tail logs live for ongoing troubleshooting
+kubectl -n crossplane-system logs -f 
+
+# See logs from a crashed previous container (before restart)
+kubectl -n crossplane-system logs --previous 
+```
+
+You can also use label selectors to fetch logs from multiple pods:
+
+```bash
+kubectl -n crossplane-system logs -l app=crossplane --all-containers
+kubectl -n crossplane-system logs -l pkg.crossplane.io/provider=provider-azure-apimanagement --all-containers
+```
+
+This logging inspection complements checking events and resource statuses, providing deeper insight when typical Kubernetes event outputs are inconclusive.
 
 ### Detailed Diagnostics
 
 ```bash
-# Get detailed provider information
 kubectl describe provider provider-azure-apimanagement
-
-# Check provider logs
 kubectl logs -n crossplane-system -l pkg.crossplane.io/provider=provider-azure-apimanagement
-
-# Check Crossplane logs
 kubectl logs -n crossplane-system -l app=crossplane
-
-# Get events
 kubectl get events --sort-by=.metadata.creationTimestamp
 ```
 
 ### Azure Resource Check
 
 ```bash
-# List all resources in resource group
 az resource list --resource-group rg-my-gateway-uk
-
-# Check API Management service
 az apim show --name apim-my-gateway-uk --resource-group rg-my-gateway-uk
-
-# List APIs
 az apim api list --service-name apim-my-gateway-uk --resource-group rg-my-gateway-uk
-
-# Check virtual network
 az network vnet show --name vnet-my-gateway-uk --resource-group rg-my-gateway-uk
 ```
 
