@@ -1,6 +1,6 @@
-# Crossplane Azure Infrastructure Platform
+# Azure API Management- Custom Control Plane
 
-A Crossplane-based infrastructure platform for managing Azure API Management gateways and APIs through composable resources.
+A Crossplane-based infrastructure control plane for managing Azure API Management gateways and APIs through composable resources.
 
 ## What is Crossplane?
 
